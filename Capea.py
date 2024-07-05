@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import json
 from PIL import Image
+from PIL import ExifTags
 # Carpeta donde se guardarán las fotos 📁
 IMG_DIR = "./fotos"
 
@@ -70,6 +71,23 @@ elif opcion == "Ver fotos 📸":
     # Mostramos las fotos 📸
     for nombre_foto, info in fotos_ordenadas:
         foto = Image.open(os.path.join(IMG_DIR, nombre_foto + '.png'))
+
+        try:
+            for orientation in ExifTags.TAGS.keys():
+                if ExifTags.TAGS[orientation] == 'Orientation':
+                    break
+            exif = dict(foto._getexif().items())
+
+            if exif[orientation] == 3:
+                foto = foto.rotate(180, expand=True)
+            elif exif[orientation] == 6:
+                foto = foto.rotate(270, expand=True)
+            elif exif[orientation] == 8:
+                foto = foto.rotate(90, expand=True)
+        except (AttributeError, KeyError, IndexError):
+            # La imagen no tiene información EXIF
+            pass
+
         likes = len(info['likes'])
         descripcion = nombre_foto  # Aquí puedes reemplazar 'nombre_foto' con la descripción de la foto
         st.image(foto, use_column_width=True)
@@ -82,9 +100,10 @@ elif opcion == "Ver fotos 📸":
                     json.dump(info_fotos, f)
             elif user_id in info['likes']:
                 st.write(f'Ya le has dado like a esta foto! ❤️')
-if st.button("Botón"):
+# Añade un botón para mostrar la entrada de la contraseña
+if st.button("Mostrar entrada de contraseña"):
     # Añade una opción para introducir una contraseña
-    password = st.text_input("Aqui:", type='password')
+    password = st.text_input("Introduce la contraseña", type='password')
 
     # Si la contraseña es correcta, muestra el botón de descarga
     if password == "Admin1":
