@@ -27,7 +27,7 @@ st.title('📸 Sube y vota las mejores fotos!')
 # Introduce tu ID de Instagram 📱
 user_id = st.text_input('Escribe tu instagram para que todos puedan ver la foto que has subido🔝').strip().lower()
 
-opcion = st.selectbox("Elige una opción", ["Subir foto 📤", "Ver fotos 📸"])
+opcion = st.selectbox("Elige una opción", ["Subir foto 📤", "Ver fotos 📸", "📁"])
 #"Tomar foto 🤳🏼"
 if opcion == "Hazte un selfie 🤳🏼":
     # Comprobamos si ya has subido una foto 🔄
@@ -58,6 +58,23 @@ elif opcion == "Subir foto 📤":
 
         if foto_subida is not None and nombre_foto and user_id:
             foto = Image.open(foto_subida)
+
+            try:
+                for orientation in ExifTags.TAGS.keys():
+                    if ExifTags.TAGS[orientation] == 'Orientation':
+                        break
+                exif = dict(foto._getexif().items())
+
+                if exif[orientation] == 3:
+                    foto = foto.rotate(180, expand=True)
+                elif exif[orientation] == 6:
+                    foto = foto.rotate(270, expand=True)
+                elif exif[orientation] == 8:
+                    foto = foto.rotate(90, expand=True)
+            except (AttributeError, KeyError, IndexError):
+                # La imagen no tiene información EXIF
+                pass
+
             foto.save(os.path.join(IMG_DIR, nombre_foto + '.png'))
             # Guardamos la info de la foto 📝
             info_fotos[nombre_foto] = {'uploader': user_id, 'likes': []}
@@ -73,23 +90,6 @@ elif opcion == "Ver fotos 📸":
     # Mostramos las fotos 📸
     for nombre_foto, info in fotos_ordenadas:
         foto = Image.open(os.path.join(IMG_DIR, nombre_foto + '.png'))
-
-        try:
-            for orientation in ExifTags.TAGS.keys():
-                if ExifTags.TAGS[orientation] == 'Orientation':
-                    break
-            exif = dict(foto._getexif().items())
-
-            if exif[orientation] == 3:
-                foto = foto.rotate(180, expand=True)
-            elif exif[orientation] == 6:
-                foto = foto.rotate(270, expand=True)
-            elif exif[orientation] == 8:
-                foto = foto.rotate(90, expand=True)
-        except (AttributeError, KeyError, IndexError):
-            # La imagen no tiene información EXIF
-            pass
-
         likes = len(info['likes'])
         descripcion = nombre_foto  # Aquí puedes reemplazar 'nombre_foto' con la descripción de la foto
         st.image(foto, use_column_width=True)
@@ -102,26 +102,27 @@ elif opcion == "Ver fotos 📸":
                     json.dump(info_fotos, f)
             elif user_id in info['likes']:
                 st.write(f'Ya le has dado like a esta foto! ❤️')
-# Añade un botón para mostrar la entrada de la contraseña
 
-password = st.text_input("No escribas nada")
+elif opcion == "Descargar fotos 📁":
+    # Añade una opción para introducir una contraseña
+    password = st.text_input("Introduce la contraseña", type='password')
 
-# Si la contraseña es correcta, muestra el botón de descarga
-if password == "Admin1":
-    # Crea un archivo zip
-    with zipfile.ZipFile('fotos.zip', 'w') as zip_f:
-        for nombre_foto in info_fotos.keys():
-            # Añade cada foto al archivo zip
-            zip_f.write(os.path.join(IMG_DIR, nombre_foto + '.png'), arcname=nombre_foto + '.png')
+    # Si la contraseña es correcta, muestra el botón de descarga
+    if password == "Admin1":
+        # Crea un archivo zip
+        with zipfile.ZipFile('fotos.zip', 'w') as zip_f:
+            for nombre_foto in info_fotos.keys():
+                # Añade cada foto al archivo zip
+                zip_f.write(os.path.join(IMG_DIR, nombre_foto + '.png'), arcname=nombre_foto + '.png')
 
-    # Lee el contenido del archivo zip
-    with open('fotos.zip', 'rb') as f:
-        bytes = f.read()
+        # Lee el contenido del archivo zip
+        with open('fotos.zip', 'rb') as f:
+            bytes = f.read()
 
-    # Proporciona un botón de descarga para el archivo zip
-    st.download_button(
-        label="Descargar fotos.zip",
-        data=bytes,
-        file_name='fotos.zip',
-        mime='application/zip',
-    )
+        # Proporciona un botón de descarga para el archivo zip
+        st.download_button(
+            label="Descargar fotos.zip",
+            data=bytes,
+            file_name='fotos.zip',
+            mime='application/zip',
+        )
