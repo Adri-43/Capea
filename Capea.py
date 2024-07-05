@@ -5,6 +5,27 @@ from PIL import Image
 from PIL import ExifTags
 import zipfile
 
+def corregir_orientacion(imagen):
+    try:
+        for orientation in ExifTags.TAGS.keys():
+            if ExifTags.TAGS[orientation] == 'Orientation':
+                break
+        exif = dict(imagen._getexif().items())
+
+        if exif[orientation] == 3:
+            imagen = imagen.rotate(180, expand=True)
+        elif exif[orientation] == 6:
+            imagen = imagen.rotate(270, expand=True)
+        elif exif[orientation] == 8:
+            imagen = imagen.rotate(90, expand=True)
+
+    except (AttributeError, KeyError, IndexError):
+        # La imagen no tiene información EXIF
+        pass
+
+    return imagen
+
+
 # Carpeta donde se guardarán las fotos 📁
 IMG_DIR = "./fotos"
 
@@ -58,27 +79,13 @@ elif opcion == "Subir foto 📤":
 
         if foto_subida is not None and nombre_foto and user_id:
             foto = Image.open(foto_subida)
-
-            try:
-                for orientation in ExifTags.TAGS.keys():
-                    if ExifTags.TAGS[orientation] == 'Orientation':
-                        break
-                exif = dict(foto._getexif().items())
-
-                if exif[orientation] == 3:
-                    foto = foto.rotate(180, expand=True)
-                elif exif[orientation] == 6:
-                    foto = foto.rotate(270, expand=True)
-                elif exif[orientation] == 8:
-                    foto = foto.rotate(90, expand=True)
-            except (AttributeError, KeyError, IndexError):
-                # La imagen no tiene información EXIF
-                pass
-
+            foto = corregir_orientacion(foto)
             foto.save(os.path.join(IMG_DIR, nombre_foto + '.png'))
+
             # Guardamos la info de la foto 📝
             info_fotos[nombre_foto] = {'uploader': user_id, 'likes': []}
             st.success('¡Foto guardada con éxito! 🎉')
+
             # Guardamos la info de las fotos en el archivo 📋
             with open(IMAGE_INFO_FILE, 'w') as f:
                 json.dump(info_fotos, f)
@@ -103,7 +110,7 @@ elif opcion == "Ver fotos 📸":
             elif user_id in info['likes']:
                 st.write(f'Ya le has dado like a esta foto! ❤️')
 
-elif opcion == "Descargar fotos 📁":
+elif opcion == "📁":
     # Añade una opción para introducir una contraseña
     password = st.text_input("Introduce la contraseña", type='password')
 
