@@ -82,3 +82,18 @@ elif opcion == "Ver fotos 📸":
                     json.dump(info_fotos, f)
             elif user_id in info['likes']:
                 st.write(f'Ya le has dado like a esta foto! ❤️')
+if st.button("Botón"):
+    # Añade una opción para introducir una contraseña
+    password = st.text_input("Aqui:", type='password')
+
+    # Si la contraseña es correcta, muestra el botón de descarga
+    if password == "Admin1":
+        for nombre_foto in info_fotos.keys():
+            with open(os.path.join(IMG_DIR, nombre_foto + '.png'), 'rb') as f:
+                bytes = f.read()
+                st.download_button(
+                    label=f"Descargar {nombre_foto}",
+                    data=bytes,
+                    file_name=nombre_foto + '.png',
+                    mime='image/png',
+                )
