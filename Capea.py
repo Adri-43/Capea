@@ -25,6 +25,10 @@ def corregir_orientacion(imagen):
 
     return imagen
 
+st.set_page_config(
+    page_title="La Capea Del Año",
+    page_icon="🐂",
+)
 
 # Carpeta donde se guardarán las fotos 📁
 IMG_DIR = "./fotos"
