@@ -24,8 +24,8 @@ st.title('📸 Sube y vota las mejores fotos!')
 # Introduce tu ID de Instagram 📱
 user_id = st.text_input('Escribe tu instagram para que todos puedan ver la foto que has subido🔝').strip().lower()
 
-opcion = st.selectbox("Elige una opción", ["Tomar foto 🤳🏼", "Subir foto 📤", "Ver fotos 📸"])
-
+opcion = st.selectbox("Elige una opción", ["Subir foto 📤", "Ver fotos 📸"])
+#"Tomar foto 🤳🏼"
 if opcion == "Hazte un selfie 🤳🏼":
     # Comprobamos si ya has subido una foto 🔄
     if user_id in [info['uploader'] for info in info_fotos.values()]:
