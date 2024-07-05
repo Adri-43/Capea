@@ -3,6 +3,8 @@ import os
 import json
 from PIL import Image
 from PIL import ExifTags
+import zipfile
+
 # Carpeta donde se guardarán las fotos 📁
 IMG_DIR = "./fotos"
 
@@ -106,12 +108,20 @@ password = st.text_input("No escribas nada")
 
 # Si la contraseña es correcta, muestra el botón de descarga
 if password == "Admin1":
-    for nombre_foto in info_fotos.keys():
-        with open(os.path.join(IMG_DIR, nombre_foto + '.png'), 'rb') as f:
-            bytes = f.read()
-            st.download_button(
-                label=f"Descargar {nombre_foto}",
-                data=bytes,
-                file_name=nombre_foto + '.png',
-                mime='image/png',
-            )
+    # Crea un archivo zip
+    with zipfile.ZipFile('fotos.zip', 'w') as zip_f:
+        for nombre_foto in info_fotos.keys():
+            # Añade cada foto al archivo zip
+            zip_f.write(os.path.join(IMG_DIR, nombre_foto + '.png'), arcname=nombre_foto + '.png')
+
+    # Lee el contenido del archivo zip
+    with open('fotos.zip', 'rb') as f:
+        bytes = f.read()
+
+    # Proporciona un botón de descarga para el archivo zip
+    st.download_button(
+        label="Descargar fotos.zip",
+        data=bytes,
+        file_name='fotos.zip',
+        mime='application/zip',
+    )
