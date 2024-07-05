@@ -2,7 +2,6 @@ import streamlit as st
 import os
 import json
 from PIL import Image
-import imageio
 # Carpeta donde se guardarán las fotos 📁
 IMG_DIR = "./fotos"
 
